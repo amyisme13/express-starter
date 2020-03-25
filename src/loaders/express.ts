@@ -3,9 +3,11 @@ import cors from 'cors';
 import helmet from 'helmet';
 import createError, { HttpError } from 'http-errors';
 import morgan from 'morgan';
+import { isCelebrate, CelebrateInternalError } from 'celebrate';
 
 import config from '../config';
 import logger from './logger';
+import routes from '../api';
 
 export default ({ app }: { app: Application }): void => {
   app.enable('trust proxy');
@@ -28,36 +30,44 @@ export default ({ app }: { app: Application }): void => {
     )
   );
 
+  // Load API routes
+  app.use(config.API_PREFIX, routes());
+
   // Catch 404
   app.use((req, res, next) => {
     return next(new createError.NotFound());
   });
 
-  // Error Handler
-  app.use(
-    (
-      err: Error | HttpError,
-      req: Request,
-      res: Response,
-      next: NextFunction
-    ) => {
-      if (res.headersSent) {
-        next(err);
-        return;
-      }
-
-      let status = 500;
-      if (err instanceof HttpError) {
-        status = err.status;
-      }
-
-      let message = err.message;
-      if (config.NODE_ENV === 'production' && status === 500) {
-        message = 'Internal server error.';
-      }
-
-      res.status(status);
-      res.json({ status, message });
+  // celebrate erorr handler
+  app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+    if (!isCelebrate(err)) {
+      return next(err);
     }
-  );
+
+    const { joi } = err as CelebrateInternalError;
+    return next(new createError.UnprocessableEntity(joi.message));
+  });
+
+  // Error handler
+  app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+    if (res.headersSent) {
+      return next(err);
+    }
+
+    let status = 500;
+    if (err instanceof HttpError) {
+      status = err.status;
+    }
+
+    let message = err.message;
+    if (config.NODE_ENV === 'production' && status === 500) {
+      message = 'Internal server error.';
+    }
+
+    res.status(status);
+    res.json({
+      status,
+      message,
+    });
+  });
 };

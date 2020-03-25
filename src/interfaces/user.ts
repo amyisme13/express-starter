@@ -6,3 +6,14 @@ export interface User extends Document {
   password: string;
   salt: string;
 }
+
+export interface CleanUser {
+  name: User['name'];
+  email: User['email'];
+}
+
+export interface CreateUserDTO {
+  name: User['name'];
+  email: User['email'];
+  password: User['password'];
+}
