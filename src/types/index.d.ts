@@ -4,7 +4,13 @@ import { Model } from 'mongoose';
 declare global {
   namespace Express {
     export interface Request {
-      currentUser: User;
+      user: User;
+
+      payload: {
+        iat: number;
+        sub: string;
+        exp: number;
+      };
     }
   }
 

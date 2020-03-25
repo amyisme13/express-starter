@@ -6,6 +6,8 @@ import { Logger } from 'winston';
 import AuthService from '../../services/auth';
 import { CreateUserDTO } from '../../interfaces/user';
 import { HttpError } from 'http-errors';
+import isAuthenticated from '../middleware/isAuthenticated';
+import attachAuthUser from '../middleware/attachAuthUser';
 
 const router = Router();
 
@@ -75,4 +77,12 @@ export default (app: Router): void => {
       }
     }
   );
+
+  router.get('/me', isAuthenticated, attachAuthUser, (req, res) => {
+    const user = req.user.toObject();
+    Reflect.deleteProperty(user, 'password');
+    Reflect.deleteProperty(user, 'salt');
+
+    return res.json(user);
+  });
 };

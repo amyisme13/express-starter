@@ -8,6 +8,7 @@ import { isCelebrate, CelebrateInternalError } from 'celebrate';
 import config from '../config';
 import logger from './logger';
 import routes from '../api';
+import { UnauthorizedError } from 'express-jwt';
 
 export default ({ app }: { app: Application }): void => {
   app.enable('trust proxy');
@@ -46,6 +47,15 @@ export default ({ app }: { app: Application }): void => {
 
     const { joi } = err as CelebrateInternalError;
     return next(new createError.UnprocessableEntity(joi.message));
+  });
+
+  // express-jwt error handler
+  app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+    if (err instanceof UnauthorizedError) {
+      return next(new createError.Unauthorized());
+    }
+
+    next(err);
   });
 
   // Error handler
