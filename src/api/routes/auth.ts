@@ -5,6 +5,7 @@ import { Logger } from 'winston';
 
 import AuthService from '../../services/auth';
 import { CreateUserDTO } from '../../interfaces/user';
+import { HttpError } from 'http-errors';
 
 const router = Router();
 
@@ -33,7 +34,43 @@ export default (app: Router): void => {
 
         return res.status(201).json({ user, token });
       } catch (e) {
-        logger.error('🔥 error: %o', e);
+        if (!(e instanceof HttpError)) {
+          logger.error('🔥 error: %o', e);
+        }
+
+        return next(e);
+      }
+    }
+  );
+
+  router.post(
+    '/login',
+
+    celebrate({
+      body: Joi.object({
+        email: Joi.string().required(),
+        password: Joi.string().required(),
+      }),
+    }),
+
+    async (req, res, next) => {
+      const logger = Container.get('logger') as Logger;
+
+      try {
+        const { email, password } = req.body;
+
+        const authServiceInstance = Container.get(AuthService);
+        const { user, token } = await authServiceInstance.login(
+          email,
+          password
+        );
+
+        return res.status(200).json({ user, token });
+      } catch (e) {
+        if (!(e instanceof HttpError)) {
+          logger.error('🔥 error: %o', e);
+        }
+
         return next(e);
       }
     }
