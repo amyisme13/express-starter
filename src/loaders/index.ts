@@ -13,7 +13,14 @@ export default async ({
   await mongooseLoader();
   logger.info('✔️ DB loaded and connected.');
 
-  await diLoader();
+  const models = [
+    {
+      name: 'userModel',
+      model: require('../models/user').default,
+    },
+  ];
+
+  await diLoader({ models });
   logger.info('✔️ Dependency Injector loaded.');
 
   await expressLoader({ app: expressApp });
