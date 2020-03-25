@@ -15,4 +15,6 @@ export default {
 
   LOGS_LEVEL: process.env.LOGS_LEVEL || 'info',
   LOGS_MAXSIZE: parseInt(process.env.LOGS_MAXSIZE || '', 10) || 5 * 1024 * 1024, // default 5MB
+
+  MONGODB_URI: process.env.MONGODB_URI || 'mongo://localhost:27017/express',
 };
