@@ -22,4 +22,6 @@ export default {
   JWT_EXP: parseInt(process.env.JWT_EXP || '', 10) || 60, // In minute
 
   API_PREFIX: process.env.API_PREFIX || '/api',
+
+  AGENDA_COLLECTION: process.env.AGENDA_COLLECTION || 'agenda',
 };

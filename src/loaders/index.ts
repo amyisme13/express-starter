@@ -10,7 +10,7 @@ export default async ({
 }: {
   expressApp: Application;
 }): Promise<void> => {
-  await mongooseLoader();
+  const mongoose = await mongooseLoader();
   logger.info('✔️ DB loaded and connected.');
 
   const models = [
@@ -20,7 +20,7 @@ export default async ({
     },
   ];
 
-  await diLoader({ models });
+  await diLoader({ models, mongoDb: mongoose.connection.db });
   logger.info('✔️ Dependency Injector loaded.');
 
   await expressLoader({ app: expressApp });
